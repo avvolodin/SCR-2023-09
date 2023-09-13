@@ -181,40 +181,44 @@ object hof{
       case Some(v) => f(v)
       case None => None
     }
+
+    /**
+     *
+     * Реализовать метод printIfAny, который будет печатать значение, если оно есть
+     */
+    def printIfAny(): Unit = this match {
+      case Some(v) => println(v)
+      case None =>
+    }
+
+    /**
+     *
+     * Реализовать метод zip, который будет создавать Option от пары значений из 2-х Option
+     */
+
+    def zip[A](a: Option[A]) : Option[(T, A)] = (this, a) match {
+      case (Some(x), Some(y)) => Some((x,y))
+      case _ => None
+    }
+
+
+    /**
+     *
+     * Реализовать метод filter, который будет возвращать не пустой Option
+     * в случае если исходный не пуст и предикат от значения = true
+     */
+    def filter(f: T=>Boolean): Option[T] = this match {
+      case Some(v) if(f(v)) => Some(v)
+      case _ => None
+    }
   }
   case class Some[T](v: T) extends Option[T]
   case object None extends Option[Nothing]
 
-  object Option{
+  object Option {
+
 
   }
-
-
-
-
-  // Animal -> Dog
-  // Covariant + отношения переносятся на контейнер
-  // Contravariant - отношения переносятся на контейнер наоборот
-  // Invariant - нет отношений
-
-
-  /**
-   *
-   * Реализовать метод printIfAny, который будет печатать значение, если оно есть
-   */
-
-
-  /**
-   *
-   * Реализовать метод zip, который будет создавать Option от пары значений из 2-х Option
-   */
-
-
-  /**
-   *
-   * Реализовать метод filter, который будет возвращать не пустой Option
-   * в случае если исходный не пуст и предикат от значения = true
-   */
 
  }
 
@@ -232,11 +236,29 @@ object hof{
       * Метод cons, добавляет элемент в голову списка, для этого метода можно воспользоваться названием `::`
       *
       */
-
+      def ::[A >: T](v: A): List[A] = new ::(v, this)
      /**
       * Метод mkString возвращает строковое представление списка, с учетом переданного разделителя
       *
       */
+
+     def mkString(divider: String = ","): String = {
+       val builder = new StringBuilder()
+
+       var ptr = this
+       while (ptr != Nil){
+         ptr match {
+           case ::(head, tail) => {
+             if (builder.nonEmpty) builder.append(divider)
+             builder.append(head)
+             ptr = tail
+           }
+           case _ =>
+         }
+
+       }
+       builder.toString()
+     }
 
      /**
       * Конструктор, позволяющий создать список из N - го числа аргументов
@@ -251,25 +273,111 @@ object hof{
       * Реализовать метод reverse который позволит заменить порядок элементов в списке на противоположный
       */
 
+     def reverse(): List[T] = {
+       var ptr = this
+       var newList: List[T] = Nil
+       while(ptr != Nil){
+         ptr match {
+           case ::(head, tail) =>
+             newList = new::(head, newList)
+             ptr = tail
+           case Nil =>
+         }
+       }
+       newList
+     }
+
      /**
       *
       * Реализовать метод map для списка который будет применять некую ф-цию к элементам данного списка
       */
+
+     def map[A](f: T => A): List[A] = {
+       var ptr = this
+       var newList: List[A] = Nil
+       while(ptr != Nil){
+         ptr match {
+           case ::(head, tail) =>
+             newList = new::(f(head), newList)
+             ptr = tail
+           case Nil =>
+         }
+       }
+       newList
+     }
+
+     def flatMap[L, A](f: T => List[A]): List[A] = {
+       var ptr = this
+       var newList: List[A] = Nil
+       while(ptr != Nil){
+         ptr match {
+           case ::(head, tail) =>
+             var innerPtr = f(head)
+             while (innerPtr != Nil){
+               innerPtr match {
+                 case ::(head, tail) =>
+                   newList = head::newList
+                   innerPtr = tail
+                 case Nil =>
+               }
+             }
+             ptr = tail
+           case Nil =>
+         }
+       }
+       newList
+     }
 
 
      /**
       *
       * Реализовать метод filter для списка который будет фильтровать список по некому условию
       */
+
+     def filter(p: T=>Boolean): List[T] = {
+       var ptr = this
+       var newList: List[T] = Nil
+       while (ptr != Nil) {
+         ptr match {
+           case ::(head, tail) =>
+             if(p(head))
+               newList = new::(head, newList)
+             ptr = tail
+           case Nil =>
+         }
+       }
+       newList
+     }
    }
     case class ::[A](head: A, tail: List[A]) extends List[A]
     case object Nil extends List[Nothing]
 
 
     object List{
-      // конструктор
-      def apply[A](v: A*): List[A] = if(v.isEmpty) Nil
-      else ::(v.head, apply(v.tail:_*))
+      // конструктор (recursive, tail optimization isn't possible)
+      def applyRec[A](v: A*): List[A] = if(v.isEmpty) Nil
+      else ::(v.head, applyRec(v.tail:_*))
+
+      // recursive, tail optimised
+      def applyRecTail[A](v: A*): List[A] = {
+        var l : List[A] = Nil
+        @tailrec
+        def builder(a: Seq[A]) : Unit = if(a.nonEmpty) {
+          l = a.head :: l
+          builder(a.tail)
+        }
+
+        builder(v.reverse)
+        l
+      }
+
+      // iterative
+      def apply[A](v: A*): List[A] = {
+        var l : List[A] = Nil
+        for(value <- v.reverse)
+          l = value :: l
+        l
+      }
     }
 
     // Пример создания экземпляра с помощью конструктора apply
@@ -284,11 +392,39 @@ object hof{
       * где каждый элемент будет увеличен на 1
       */
 
+   def incList(l: List[Int]): List[Int] = l.map(v=>v + 1)
 
     /**
       *
       * Написать функцию shoutString котрая будет принимать список String и возвращать список,
       * где к каждому элементу будет добавлен префикс в виде '!'
       */
+   def shoutString(l: List[String]): List[String] = l.map(v => v + "!")
+
+   def testApply(f: (Double, Double, Double, Double) => List[Double]): Long = {
+     var a1 = Math.random()
+     var a2 = Math.random()
+     var a3 = Math.random()
+     var a4 = Math.random()
+     var t = 0.0
+     val start = System.currentTimeMillis()
+     for (i <- 1 to 10000000) {
+       val l = f(a1,a2,a3,a4)
+       l match {
+         case ::(head, tail) => t = head
+         case Nil => t = 0
+       }
+     }
+     var end = System.currentTimeMillis()
+     end - start
+   }
+
+   def stat(f: () => Long, rep: Int = 20): (Double, Double) = {
+     val m = (1 to rep).map(v => f())
+     val mean = m.sum.toDouble / m.length.toDouble
+     val sd = Math.sqrt(m.map(v=>Math.pow(v-mean, 2)).sum / m.length)
+     (mean, sd)
+   }
+
 
  }
