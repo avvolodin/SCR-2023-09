@@ -356,6 +356,8 @@ object hof{
        newList
      }
 
+     def mapOnFlatMap[A](f: T=>A): List[A] = flatMap(v => List(v))
+
      def flatMap[A](f: T => List[A]): List[A] = {
        var ptr = this
        var newList: List[A] = Nil
@@ -438,6 +440,9 @@ object hof{
 
        newList.reverse()
      }
+
+     def filterOnFlatMap(p: T => Boolean): List[T] = flatMap(v => if (p(v)) List(v) else Nil)
+
    }
     case class ::[A](head: A, tail: List[A]) extends List[A]
     case object Nil extends List[Nothing]
