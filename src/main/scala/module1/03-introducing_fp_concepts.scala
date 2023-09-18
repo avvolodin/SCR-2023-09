@@ -236,7 +236,8 @@ object hof{
       * Метод cons, добавляет элемент в голову списка, для этого метода можно воспользоваться названием `::`
       *
       */
-      def ::[A >: T](v: A): List[A] = new ::(v, this)
+     def ::[A >: T](v: A): List[A] = new::(v, this)
+
      /**
       * Метод mkString возвращает строковое представление списка, с учетом переданного разделителя
       *
@@ -246,7 +247,7 @@ object hof{
        val builder = new StringBuilder()
 
        var ptr = this
-       while (ptr != Nil){
+       while (ptr != Nil) {
          ptr match {
            case ::(head, tail) => {
              if (builder.nonEmpty) builder.append(divider)
@@ -258,6 +259,25 @@ object hof{
 
        }
        builder.toString()
+     }
+
+     def mkStringRec(divider: String = ","): Unit = {
+       val builder = new StringBuilder()
+
+       @tailrec
+       def loop(res: List[T], builder: StringBuilder): Unit = {
+         res match {
+           case ::(head, tail) =>
+             if (builder.nonEmpty) builder.append(divider)
+             builder.append(head)
+             loop(tail, builder)
+           case Nil =>
+         }
+       }
+
+       loop(this.reverse(), builder)
+       builder.toString
+
      }
 
      /**
@@ -274,9 +294,24 @@ object hof{
       */
 
      def reverse(): List[T] = {
+       var newList: List[T] = Nil
+
+       @tailrec
+       def rec(list: List[T]): Unit = list match {
+         case ::(head, tail) =>
+           newList = head :: newList
+           rec(tail)
+         case Nil =>
+       }
+
+       rec(this)
+       newList
+     }
+
+     def reverseIterative(): List[T] = {
        var ptr = this
        var newList: List[T] = Nil
-       while(ptr != Nil){
+       while (ptr != Nil) {
          ptr match {
            case ::(head, tail) =>
              newList = new::(head, newList)
@@ -295,7 +330,7 @@ object hof{
      def map[A](f: T => A): List[A] = {
        var ptr = this
        var newList: List[A] = Nil
-       while(ptr != Nil){
+       while (ptr != Nil) {
          ptr match {
            case ::(head, tail) =>
              newList = new::(f(head), newList)
@@ -306,17 +341,32 @@ object hof{
        newList
      }
 
-     def flatMap[L, A](f: T => List[A]): List[A] = {
+     def mapRec[A](f: T => A): List[A] = {
+       var newList: List[A] = Nil
+
+       @tailrec
+       def rec(l: List[T]): Unit = l match {
+         case ::(head, tail) =>
+           newList = f(head) :: newList
+           rec(tail)
+         case Nil =>
+       }
+
+       rec(this.reverse())
+       newList
+     }
+
+     def flatMap[A](f: T => List[A]): List[A] = {
        var ptr = this
        var newList: List[A] = Nil
-       while(ptr != Nil){
+       while (ptr != Nil) {
          ptr match {
            case ::(head, tail) =>
              var innerPtr = f(head)
-             while (innerPtr != Nil){
+             while (innerPtr != Nil) {
                innerPtr match {
                  case ::(head, tail) =>
-                   newList = head::newList
+                   newList = head :: newList
                    innerPtr = tail
                  case Nil =>
                }
@@ -325,28 +375,68 @@ object hof{
            case Nil =>
          }
        }
-       newList
+       newList.reverse()
      }
 
+     def flatMapRec[A](f: T => List[A]): List[A] = {
+       var newList: List[A] = Nil
+
+       @tailrec
+       def innerRec(l: List[A]): Unit = l match {
+         case ::(head, tail) =>
+           newList = head :: newList
+           innerRec(tail)
+         case Nil =>
+       }
+
+       @tailrec
+       def rec(l: List[T]): Unit = l match {
+         case ::(head, tail) =>
+           innerRec(f(head))
+           rec(tail)
+         case Nil =>
+       }
+
+       rec(this)
+
+       newList.reverse()
+
+     }
 
      /**
       *
       * Реализовать метод filter для списка который будет фильтровать список по некому условию
       */
 
-     def filter(p: T=>Boolean): List[T] = {
+     def filter(p: T => Boolean): List[T] = {
        var ptr = this
        var newList: List[T] = Nil
        while (ptr != Nil) {
          ptr match {
            case ::(head, tail) =>
-             if(p(head))
+             if (p(head))
                newList = new::(head, newList)
              ptr = tail
            case Nil =>
          }
        }
        newList
+     }
+
+     def filterRec(p: T => Boolean): List[T] = {
+       var newList: List[T] = Nil
+
+       @tailrec
+       def rec(list: List[T]): Unit = list match {
+         case ::(head, tail) =>
+           if(p(head))
+             newList = head :: newList
+           rec(tail)
+         case Nil =>
+       }
+       rec(this)
+
+       newList.reverse()
      }
    }
     case class ::[A](head: A, tail: List[A]) extends List[A]
