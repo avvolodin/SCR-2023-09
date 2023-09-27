@@ -3,7 +3,9 @@ package module1
 import java.util.UUID
 import scala.annotation.tailrec
 import java.time.Instant
-import scala.language.postfixOps
+import scala.collection.immutable.Stack
+import scala.collection.mutable.ListBuffer
+import scala.language.{higherKinds, postfixOps}
 
 
 
@@ -218,6 +220,10 @@ object hof{
 
  }
 
+  trait Animal
+  case object Dog
+  case object Cat
+
  object list {
    /**
     *
@@ -227,11 +233,20 @@ object hof{
     * Cons - непустой, содердит первый элемент (голову) и хвост (оставшийся список)
     */
 
+   Seq
+
+
     sealed trait List[+T] {
      /**
       * Метод cons, добавляет элемент в голову списка, для этого метода можно воспользоваться названием `::`
       *
       */
+
+      def ::[TT >: T](el: TT): List[TT] = new ::(el, this)
+
+
+
+
 
      /**
       * Метод mkString возвращает строковое представление списка, с учетом переданного разделителя
@@ -261,7 +276,69 @@ object hof{
       *
       * Реализовать метод filter для списка который будет фильтровать список по некому условию
       */
+
+       def fib(n: Int): Int = {
+         if(n == 0 | n == 1) n
+         else fib(n - 1) + fib(n - 2)
+       }
+
+      def :::[TT >: T](that: List[TT]): List[TT] = ???
+
+
+
+
+      def map[B](f: T => B): List[B] = ???
+
+      def flatMap[B](f: T => List[B]): List[B] = this match {
+        case ::(head, tail) => f(head) ::: tail.flatMap(f)
+        case Nil => Nil
+      }
+
+      @tailrec
+      final def foldLeft[B](acc: B)(op: (B, T) => B): B = this match {
+        case ::(head, tail) => tail.foldLeft(op(acc, head))(op)
+        case Nil => acc
+      }
+
+      def foldLeft2 = ???
+
+      def take(n: Int): List[T] = {
+        val r = this.foldLeft((0, List[T]())){ case ((i, acc), el) =>
+          if( i == n) (i, acc)
+          else (i + 1, acc.::(el))
+        }
+        r._2
+      }
+
+      def drop(n: Int): List[T] = ???
+
    }
+
+   val l1: List[Int] = ???
+   val l2: List[Int] = ???
+
+
+   val l3: List[Int] = for{
+     e1 <- l1
+     e2 <- l2
+   } yield e1 + e2
+
+   val l4: List[Int] = l1.flatMap(e1 => l2.map(e2 => e1 + e2))
+
+
+   val o1: Option[Int] = ???
+   val o2: Option[Int] = ???
+
+   val o3: Option[Int] = for{
+     e1 <- o1
+     e2 <- o2
+   } yield e1 + e2
+
+
+
+
+
+
     case class ::[A](head: A, tail: List[A]) extends List[A]
     case object Nil extends List[Nothing]
 
@@ -273,8 +350,6 @@ object hof{
     }
 
     // Пример создания экземпляра с помощью конструктора apply
-
-    List(1, 2, 3)
 
 
 
