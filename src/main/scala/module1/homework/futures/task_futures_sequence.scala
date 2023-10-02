@@ -1,8 +1,7 @@
 package module1.homework.futures
 
-import module1.homework.futures.HomeworksUtils.TaskSyntax
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.{Failure, Success}
 
 object task_futures_sequence {
 
@@ -21,6 +20,18 @@ object task_futures_sequence {
    */
   def fullSequence[A](futures: List[Future[A]])
                      (implicit ex: ExecutionContext): Future[(List[A], List[Throwable])] =
-    task"Реализуйте метод `fullSequence`" ()
+  {
+    val p = Promise[(List[A], List[Throwable])]()
+
+    def rec(futures: List[Future[A]], result: (List[A], List[Throwable])): Unit = futures match {
+      case Nil => p.success((result._1.reverse, result._2.reverse))
+      case ::(head, tl) => head.onComplete{
+        case Success(value) => rec(tl, (value :: result._1, result._2))
+        case Failure(throwable) => rec(tl, (result._1, throwable :: result._2))
+      }
+    }
+    rec(futures, (List.empty[A], List.empty[Throwable]))
+    p.future
+  }
 
 }
