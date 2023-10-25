@@ -75,8 +75,8 @@ object type_system {
 
    val user: User = User.from("t@q.com", "123")
 
-  user.email
-  user.password
+  //user.email
+  //user.password
 
 
   /**

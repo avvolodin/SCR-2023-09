@@ -1,15 +1,19 @@
+import module1.homework.homework6.{EError, ESome, Monad, OptionError}
+import module1.homework.homework6.Monad.MonadFlattenSyntax
+import module1.homework.homework6.Show.ShowSyntax
 import module1.implicits.{implicit_conversions, implicit_scopes}
 import module1.threads.{Thread1, ToyFuture, getRatesLocation1, getRatesLocation2, getRatesLocation3, getRatesLocation4, printRunningTime}
 import module1.{executor, future, hof, lazyOps, list, try_, type_system}
 
+import scala.collection.immutable
 import scala.concurrent.Future
 
 
 object Main {
 
   def main(args: Array[String]): Unit = {
-    println("Hello, World!" +
-      s" thread - ${Thread.currentThread().getName}" )
+//    println("Hello, World!" +
+//      s" thread - ${Thread.currentThread().getName}" )
 
 //    val t1 = new Thread{
 //      override def run(): Unit ={
@@ -71,7 +75,36 @@ object Main {
 //
 //    Thread.sleep(4000)
 
-    implicit_scopes
+//    implicit_scopes
+
+    println(List.empty[Int].show)
+
+    val o: Option[Option[Int]] = Some(Some(10))
+
+    val s1: Option[Int] = o.flattenMy
+
+
+    val opInt: Option[Int] = Monad[Option].pure(1)
+    val opopInt: Option[Option[Int]] = Monad[Option].pure(opInt)
+
+    println(opopInt.flattenMy.show)
+
+    val lInt: List[Int] = Monad[List].pure(1) ::: Monad[List].pure(2)
+    val llInt: List[List[Int]] = Monad[List].pure(lInt) ::: Monad[List].pure(lInt)
+
+    opopInt.flattenMy
+
+    println(llInt.flattenMy(Monad[List]))
+
+    val oe: OptionError[Int] = EError
+    val oeoe: OptionError[OptionError[Int]] = ESome(oe)
+
+    println(oeoe.flatten.show)
+
+
+
+
+
 
   }
 }
