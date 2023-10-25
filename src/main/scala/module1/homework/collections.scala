@@ -3,7 +3,7 @@ package module1.homework
 import scala.collection.immutable
 import scala.util.Random
 
-object collections {
+object collections1 {
 
   class Bucket(private var white: Int, private var black: Int){
     private def random = new Random()
