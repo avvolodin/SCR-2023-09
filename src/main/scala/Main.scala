@@ -7,6 +7,7 @@ import module1.validation.UserDTO
 import module1.{executor, future, hof, lazyOps, list, try_, type_system, validation}
 import module2.{toyCatsEffect, toyModel, typeClasses, zioConcurrency, zioConstructors}
 import module2.functional_effects.functionalProgram.{declarativeEncoding, executableEncoding}
+import module2.homework.zio_homework
 import zio.ZIO
 
 import scala.concurrent.Future
@@ -90,9 +91,14 @@ object Main {
 //
 //    declarativeEncoding.interpret(p4)
 
+    import module2.homework.zio_homework.RunningTimeEnv;
 
+    zio.ZEnv
 
-    zio.Runtime.default.unsafeRun(zioConcurrency.g1)
+    zio.Runtime.default.unsafeRun(for{
+      s <- zio_homework.appSpeedUp
+      _ <- ZIO.effect(println(s))
+    } yield ())
 
   }
 }

@@ -173,7 +173,7 @@ object zioOperators {
    * 2. Создать ZIO эффект который будет писать строку в консоль
    */
 
-  def writeLine(str: String) = ZIO.effect(println(str))
+  def writeLine(str: String): Task[Unit] = ZIO.effect(println(str))
 
   /** *
    * 3. Создать ZIO эффект котрый будет трансформировать эффект содержащий строку в эффект содержащий Int
